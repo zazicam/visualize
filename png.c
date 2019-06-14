@@ -16,7 +16,7 @@ inline void setRGB(png_byte *ptr, rgb color)
 	ptr[2] = color.b;
 }
 
-float *createImage(int width, int height, float xS, float yS, float rad, int maxIteration)
+rgb *createImage(int width, int height)
 {
 	rgb *buffer = (rgb *) malloc(width * height * sizeof(rgb));
 	if (buffer == NULL) {
@@ -31,7 +31,7 @@ float *createImage(int width, int height, float xS, float yS, float rad, int max
 	{
 		for (xPos=0 ; xPos<width ; xPos++)
 		{
-			rgb c = {100,0,0};
+			rgb c = {xPos,yPos,0};
 			buffer[yPos * width + xPos] = c;
 		}
 	}
@@ -139,7 +139,7 @@ int main(int argc, char *argv[])
 	// Create a test image - in this case a Mandelbrot Set fractal
 	// The output is a 1D array of floats, length: width * height
 	printf("Creating Image\n");
-	float *buffer = createImage(width, height, -0.802, -0.177, 0.011, 110);
+	rgb *buffer = createImage(width, height);
 	if (buffer == NULL) {
 		return 1;
 	}
