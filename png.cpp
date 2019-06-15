@@ -29,8 +29,7 @@ public:
 		}
 		for(int y=0;y<height;++y)
 			for(int x=0;x<width;++x) {
-				rgb c = {0,0,0};
-				buffer[y*width+x] = c;
+				buffer[y*width+x] = rgb{0,0,0}; 
 			}
 	}
 
@@ -100,10 +99,10 @@ int Image::save(const std::string& filename)
 
 	// Write image data
 	int x, y;
-	for (y=0 ; y<height ; y++) {
-		for (x=0 ; x<width ; x++) {
-			rgb c = buffer[y * width + x];
-			setRGB(&row[x], c);
+	for (y=0;y<height;++y) {
+		for (x=0;x<width;++x) {
+			rgb color = buffer[y * width + x];
+			setRGB(&row[x*3], color);
 		}
 		png_write_row(png_ptr, row);
 	}
@@ -130,13 +129,13 @@ int main(int argc, char *argv[])
 	}
 
 	Image image(200,200);
+
 	for(int i=0;i<200;++i)
 		for(int j=0;j<200;++j) {
-			rgb c = {0,i,j};
-			image.set_pixel(i,j, c);
+			image.set_pixel(i,j, rgb{i,j,0});
 		}
 
-	image.save("out.png");
+	image.save(argv[1]);
 
 	return 0;
 }
