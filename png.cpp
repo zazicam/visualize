@@ -3,6 +3,8 @@
 #include <malloc.h>
 #include <png.h>
 
+#include <stdlib.h>
+
 struct rgb {
 	unsigned char r;
 	unsigned char g;
@@ -34,7 +36,16 @@ public:
 	}
 
 	void set_pixel(int x, int y, rgb color) {
-		buffer[y*width+x] = color;
+		if(x>=0 && x<width && y>=0 && y<height) 
+			buffer[y*width+x] = color;
+	}
+
+	void circle(int x, int y, int r, rgb color) {
+		for(int i=-r;i<r;++i)
+			for(int j=-r;j<r;++j) {
+				if(i*i+j*j<=r*r)
+					set_pixel(x+j,y+i, color);
+			}
 	}
 
 	int save(const std::string& filename);
@@ -128,12 +139,22 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	Image image(200,200);
+	int h = 1000;
+	int w = 1000;
+	Image image(w,h);
 
-	for(int i=0;i<200;++i)
-		for(int j=0;j<200;++j) {
+	for(int i=0;i<h;++i)
+		for(int j=0;j<w;++j) {
 			image.set_pixel(i,j, rgb{i,j,0});
 		}
+
+	for(int i=0;i<50;++i) {
+		int x = rand()%w;
+		int y = rand()%h;
+		int r = rand()%50;
+		rgb c = rgb{rand()%255, rand()%255, rand()%255};
+		image.circle(x,y,r, c);
+	}
 
 	image.save(argv[1]);
 
