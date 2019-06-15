@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.2)
 project(png VERSION 0.0.1)
 include_directories(${PROJECT_BINARY_DIR})
 
-add_executable(png png.c)
+add_executable(png png.cpp)
 
 set_target_properties(png PROPERTIES
     CXX_STANDARD 14
@@ -13,7 +13,7 @@ set_target_properties(png PROPERTIES
 
 find_package(PNG REQUIRED)
 include_directories(${PNG_INCLUDE_DIR})
-target_link_libraries(png ${PNG_LIBRARY} m)
+target_link_libraries(png ${PNG_LIBRARY})
 
 install(TARGETS png RUNTIME DESTINATION bin)
 

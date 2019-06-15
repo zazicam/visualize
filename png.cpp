@@ -1,13 +1,13 @@
 #include <stdio.h>
-#include <math.h>
+#include <string>
 #include <malloc.h>
 #include <png.h>
 
-typedef struct rgb {
-	char r;
-	char g;
-	char b;
-} rgb;
+struct rgb {
+	unsigned char r;
+	unsigned char g;
+	unsigned char b;
+};
 
 inline void setRGB(png_byte *ptr, rgb color)
 {
@@ -16,30 +16,38 @@ inline void setRGB(png_byte *ptr, rgb color)
 	ptr[2] = color.b;
 }
 
-rgb *createImage(int width, int height)
-{
-	rgb *buffer = (rgb *) malloc(width * height * sizeof(rgb));
-	if (buffer == NULL) {
-		fprintf(stderr, "Could not create image buffer\n");
-		return NULL;
-	}
-
-	// Create Mandelbrot set image
-
-	int xPos, yPos;
-	for (yPos=0 ; yPos<height ; yPos++)
-	{
-		for (xPos=0 ; xPos<width ; xPos++)
-		{
-			rgb c = {xPos,yPos,0};
-			buffer[yPos * width + xPos] = c;
+class Image {
+	int width;
+	int height;
+	rgb *buffer;
+public:
+	Image(int w, int h) : width(w), height(h), buffer(nullptr) {
+		buffer = (rgb *) malloc(width * height * sizeof(rgb));
+		if (buffer == NULL) {
+			fprintf(stderr, "Error: could not malloc image buffer\n");
+			exit(1);
 		}
+		for(int y=0;y<height;++y)
+			for(int x=0;x<width;++x) {
+				rgb c = {0,0,0};
+				buffer[y*width+x] = c;
+			}
 	}
 
-	return buffer;
-}
+	void set_pixel(int x, int y, rgb color) {
+		buffer[y*width+x] = color;
+	}
 
-int writeImage(char* filename, int width, int height, rgb *buffer, char* title)
+	int save(const std::string& filename);
+
+	~Image() {
+		if(buffer)
+			free(buffer);
+		buffer=nullptr;
+	}
+};
+
+int Image::save(const std::string& filename)
 {
 	int code = 0;
 	FILE *fp = NULL;
@@ -48,9 +56,9 @@ int writeImage(char* filename, int width, int height, rgb *buffer, char* title)
 	png_bytep row = NULL;
 	
 	// Open file for writing (binary mode)
-	fp = fopen(filename, "wb");
+	fp = fopen(filename.c_str(), "wb");
 	if (fp == NULL) {
-		fprintf(stderr, "Could not open file %s for writing\n", filename);
+		fprintf(stderr, "Could not open file %s for writing\n", filename.c_str());
 		code = 1;
 		goto finalise;
 	}
@@ -85,15 +93,6 @@ int writeImage(char* filename, int width, int height, rgb *buffer, char* title)
 			8, PNG_COLOR_TYPE_RGB, PNG_INTERLACE_NONE,
 			PNG_COMPRESSION_TYPE_BASE, PNG_FILTER_TYPE_BASE);
 
-	// Set title
-	if (title != NULL) {
-		png_text title_text;
-		title_text.compression = PNG_TEXT_COMPRESSION_NONE;
-		title_text.key = "Title";
-		title_text.text = title;
-		png_set_text(png_ptr, info_ptr, &title_text, 1);
-	}
-
 	png_write_info(png_ptr, info_ptr);
 
 	// Allocate memory for one row (3 bytes per pixel - RGB)
@@ -104,9 +103,7 @@ int writeImage(char* filename, int width, int height, rgb *buffer, char* title)
 	for (y=0 ; y<height ; y++) {
 		for (x=0 ; x<width ; x++) {
 			rgb c = buffer[y * width + x];
-			row[x*3+0] = c.r; 
-			row[x*3+1] = c.g;
-			row[x*3+2] = c.b; 
+			setRGB(&row[x], c);
 		}
 		png_write_row(png_ptr, row);
 	}
@@ -132,26 +129,15 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	// Specify an output image size
-	int width = 500;
-	int height = 300;
+	Image image(200,200);
+	for(int i=0;i<200;++i)
+		for(int j=0;j<200;++j) {
+			rgb c = {0,i,j};
+			image.set_pixel(i,j, c);
+		}
 
-	// Create a test image - in this case a Mandelbrot Set fractal
-	// The output is a 1D array of floats, length: width * height
-	printf("Creating Image\n");
-	rgb *buffer = createImage(width, height);
-	if (buffer == NULL) {
-		return 1;
-	}
+	image.save("out.png");
 
-	// Save the image to a PNG file
-	// The 'title' string is stored as part of the PNG file
-	printf("Saving PNG\n");
-	int result = writeImage(argv[1], width, height, buffer, "This is my test image");
-
-	// Free up the memorty used to store the image
-	free(buffer);
-
-	return result;
+	return 0;
 }
 
