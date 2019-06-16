@@ -5,11 +5,7 @@
 
 #include <stdlib.h>
 
-struct rgb {
-	unsigned char r;
-	unsigned char g;
-	unsigned char b;
-};
+#include "png_image.hpp"
 
 inline void setRGB(png_byte *ptr, rgb color)
 {
@@ -18,44 +14,36 @@ inline void setRGB(png_byte *ptr, rgb color)
 	ptr[2] = color.b;
 }
 
-class Image {
-	int width;
-	int height;
-	rgb *buffer;
-public:
-	Image(int w, int h) : width(w), height(h), buffer(nullptr) {
-		buffer = (rgb *) malloc(width * height * sizeof(rgb));
-		if (buffer == NULL) {
-			fprintf(stderr, "Error: could not malloc image buffer\n");
-			exit(1);
+Image::Image(int w, int h, rgb color=rgb{0,0,0}) : width(w), height(h), buffer(nullptr) {
+	buffer = (rgb *) malloc(width * height * sizeof(rgb));
+	if (buffer == NULL) {
+		fprintf(stderr, "Error: could not malloc image buffer\n");
+		exit(1);
+	}
+	for(int y=0;y<height;++y)
+		for(int x=0;x<width;++x) {
+			buffer[y*width+x] = color; 
 		}
-		for(int y=0;y<height;++y)
-			for(int x=0;x<width;++x) {
-				buffer[y*width+x] = rgb{0,0,0}; 
-			}
-	}
+}
 
-	void set_pixel(int x, int y, rgb color) {
-		if(x>=0 && x<width && y>=0 && y<height) 
-			buffer[y*width+x] = color;
-	}
+void Image::set_pixel(int x, int y, rgb color) {
+	if(x>=0 && x<width && y>=0 && y<height) 
+		buffer[y*width+x] = color;
+}
 
-	void circle(int x, int y, int r, rgb color) {
-		for(int i=-r;i<r;++i)
-			for(int j=-r;j<r;++j) {
-				if(i*i+j*j<=r*r)
-					set_pixel(x+j,y+i, color);
-			}
-	}
+void Image::circle(int x, int y, int r, rgb color) {
+	for(int i=-r;i<r;++i)
+		for(int j=-r;j<r;++j) {
+			if(i*i+j*j<=r*r)
+				set_pixel(x+j,y+i, color);
+		}
+}
 
-	int save(const std::string& filename);
-
-	~Image() {
-		if(buffer)
-			free(buffer);
-		buffer=nullptr;
-	}
-};
+Image::~Image() {
+	if(buffer)
+		free(buffer);
+	buffer=nullptr;
+}
 
 int Image::save(const std::string& filename)
 {
@@ -128,36 +116,5 @@ int Image::save(const std::string& filename)
 	if (row != NULL) free(row);
 
 	return code;
-}
-
-
-int main(int argc, char *argv[])
-{
-	// Make sure that the output filename argument has been provided
-	if (argc != 2) {
-		fprintf(stderr, "Please specify output file\n");
-		return 1;
-	}
-
-	int h = 1000;
-	int w = 1000;
-	Image image(w,h);
-
-	for(int i=0;i<h;++i)
-		for(int j=0;j<w;++j) {
-			image.set_pixel(i,j, rgb{i,j,0});
-		}
-
-	for(int i=0;i<50;++i) {
-		int x = rand()%w;
-		int y = rand()%h;
-		int r = rand()%50;
-		rgb c = rgb{rand()%255, rand()%255, rand()%255};
-		image.circle(x,y,r, c);
-	}
-
-	image.save(argv[1]);
-
-	return 0;
 }
 

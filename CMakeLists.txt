@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.2)
 
-project(png VERSION 0.0.1)
+project(visualize VERSION 0.0.1)
 include_directories(${PROJECT_BINARY_DIR})
 
-add_executable(png png.cpp)
+add_executable(visualize visualize.cpp png_image.cpp)
 
-set_target_properties(png PROPERTIES
+set_target_properties(visualize PROPERTIES
     CXX_STANDARD 14
     CXX_STANDARD_REQUIRED ON
     COMPILE_OPTIONS "-Wpedantic;-Wall;-Wextra"
@@ -13,9 +13,9 @@ set_target_properties(png PROPERTIES
 
 find_package(PNG REQUIRED)
 include_directories(${PNG_INCLUDE_DIR})
-target_link_libraries(png ${PNG_LIBRARY})
+target_link_libraries(visualize ${PNG_LIBRARY})
 
-install(TARGETS png RUNTIME DESTINATION bin)
+install(TARGETS visualize RUNTIME DESTINATION bin)
 
 set(CPACK_GENERATOR DEB)
 
