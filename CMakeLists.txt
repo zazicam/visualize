@@ -1,9 +1,14 @@
 cmake_minimum_required(VERSION 3.2)
 
-project(visualize VERSION 0.0.1)
+project(visualize VERSION 0.0.$ENV{TRAVIS_BUILD_NUMBER})
+
 include_directories(${PROJECT_BINARY_DIR})
 
-add_executable(visualize visualize.cpp png_image.cpp)
+add_executable(visualize
+	visualize.cpp
+	png_image.cpp
+	png_image.hpp
+)
 
 set_target_properties(visualize PROPERTIES
     CXX_STANDARD 14
